@@ -2,8 +2,10 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
 
+import { shouldSkipDbAccess } from './shouldSkipDbAccess'
+
 export async function getRedirects(depth = 1) {
-  if (!process.env.DATABASE_URI) {
+  if (shouldSkipDbAccess()) {
     return []
   }
 

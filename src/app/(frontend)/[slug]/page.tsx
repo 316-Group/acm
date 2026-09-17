@@ -68,10 +68,12 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   return generateMeta({ doc: page })
 }
 
+import { shouldSkipDbAccess } from '@/utilities/shouldSkipDbAccess'
+
 export const dynamic = 'force-dynamic'
 
 const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
-  if (!process.env.DATABASE_URI) {
+  if (shouldSkipDbAccess()) {
     return null
   }
 

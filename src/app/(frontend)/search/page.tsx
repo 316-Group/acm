@@ -13,10 +13,12 @@ type Args = {
     q: string
   }>
 }
+import { shouldSkipDbAccess } from '@/utilities/shouldSkipDbAccess'
+
 export const dynamic = 'force-dynamic'
 
 export default async function Page({ searchParams: searchParamsPromise }: Args) {
-  if (!process.env.DATABASE_URI) {
+  if (shouldSkipDbAccess()) {
     return (
       <div className="pt-24 pb-24">
         <PageClient />

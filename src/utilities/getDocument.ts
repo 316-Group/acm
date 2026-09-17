@@ -4,10 +4,12 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
 
+import { shouldSkipDbAccess } from './shouldSkipDbAccess'
+
 type Collection = keyof Config['collections']
 
 async function getDocument(collection: Collection, slug: string, depth = 0) {
-  if (!process.env.DATABASE_URI) {
+  if (shouldSkipDbAccess()) {
     return null
   }
 

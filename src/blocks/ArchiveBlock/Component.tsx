@@ -8,6 +8,8 @@ import RichText from '@/components/RichText'
 import { CollectionArchive } from '@/components/CollectionArchive'
 import { ProjectArchive } from '@/components/ProjectArchive'
 
+import { shouldSkipDbAccess } from '@/utilities/shouldSkipDbAccess'
+
 export const ArchiveBlock: React.FC<
   ArchiveBlockProps & {
     id?: string
@@ -20,7 +22,7 @@ export const ArchiveBlock: React.FC<
   let posts: Post[] = []
   let projects: Project[] = []
 
-  if (populateBy === 'collection' && process.env.DATABASE_URI) {
+  if (populateBy === 'collection' && !shouldSkipDbAccess()) {
     try {
       const payload = await getPayload({ config: configPromise })
 

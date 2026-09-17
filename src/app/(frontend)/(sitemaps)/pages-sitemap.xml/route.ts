@@ -3,8 +3,13 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { unstable_cache } from 'next/cache'
 
+import { shouldSkipDbAccess } from '@/utilities/shouldSkipDbAccess'
+
 const getPagesSitemap = unstable_cache(
   async () => {
+    if (shouldSkipDbAccess()) {
+      return []
+    }
     try {
       const payload = await getPayload({ config })
       const SITE_URL =

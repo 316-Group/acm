@@ -10,6 +10,8 @@ import React from 'react'
 import PageClient from './page.client'
 import type { Tag, Location } from '@/payload-types'
 
+import { shouldSkipDbAccess } from '@/utilities/shouldSkipDbAccess'
+
 export const dynamic = 'force-dynamic'
 export const revalidate = 600
 
@@ -25,7 +27,7 @@ type PageProps = {
 }
 
 export default async function Page({ searchParams }: PageProps) {
-  if (!process.env.DATABASE_URI) {
+  if (shouldSkipDbAccess()) {
     return (
       <div className="pt-24 pb-24">
         <PageClient />
