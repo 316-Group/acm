@@ -22,6 +22,8 @@ const serverFunction: ServerFunctionClient = async function (args) {
   })
 }
 
+export const dynamic = 'force-dynamic'
+
 const Layout = ({ children }: Args) => (
   <RootLayout config={config} importMap={importMap} serverFunction={serverFunction}>
     {children}

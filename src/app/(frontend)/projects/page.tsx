@@ -25,6 +25,20 @@ type PageProps = {
 }
 
 export default async function Page({ searchParams }: PageProps) {
+  if (!process.env.DATABASE_URI) {
+    return (
+      <div className="pt-24 pb-24">
+        <PageClient />
+        <div className="container mb-16">
+          <div className="prose dark:prose-invert max-w-none">
+            <h1>Projects</h1>
+          </div>
+        </div>
+        <ProjectArchive projects={[]} />
+      </div>
+    )
+  }
+
   const { q, tag, location, status } = await searchParams
   const payload = await getPayload({ config: configPromise })
 

@@ -13,7 +13,18 @@ type Args = {
     q: string
   }>
 }
+export const dynamic = 'force-dynamic'
+
 export default async function Page({ searchParams: searchParamsPromise }: Args) {
+  if (!process.env.DATABASE_URI) {
+    return (
+      <div className="pt-24 pb-24">
+        <PageClient />
+        <div className="container">No results found.</div>
+      </div>
+    )
+  }
+
   const { q: query } = await searchParamsPromise
   const payload = await getPayload({ config: configPromise })
 

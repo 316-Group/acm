@@ -87,7 +87,7 @@ export default buildConfig({
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
   db: mongooseAdapter({
-    url: process.env.DATABASE_URI || '',
+    url: process.env.DATABASE_URI || 'mongodb://127.0.0.1:27017/build-fallback',
   }),
   collections: [
     Pages,
@@ -116,7 +116,7 @@ export default buildConfig({
     ...plugins,
     // storage-adapter-placeholder
   ],
-  secret: process.env.PAYLOAD_SECRET,
+  secret: process.env.PAYLOAD_SECRET || 'fallback-secret-key-for-build',
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

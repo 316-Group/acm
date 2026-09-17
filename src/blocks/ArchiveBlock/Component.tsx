@@ -20,66 +20,70 @@ export const ArchiveBlock: React.FC<
   let posts: Post[] = []
   let projects: Project[] = []
 
-  if (populateBy === 'collection') {
-    const payload = await getPayload({ config: configPromise })
+  if (populateBy === 'collection' && process.env.DATABASE_URI) {
+    try {
+      const payload = await getPayload({ config: configPromise })
 
-    if (relationTo === 'posts') {
-      const flattenedCategories = categories?.map((category) => {
-        if (typeof category === 'object') return category.id
-        else return category
-      })
+      if (relationTo === 'posts') {
+        const flattenedCategories = categories?.map((category) => {
+          if (typeof category === 'object') return category.id
+          else return category
+        })
 
-      const fetchedPosts = await payload.find({
-        collection: 'posts',
-        depth: 1,
-        limit,
-        ...(flattenedCategories && flattenedCategories.length > 0
-          ? {
-              where: {
-                categories: {
-                  in: flattenedCategories,
+        const fetchedPosts = await payload.find({
+          collection: 'posts',
+          depth: 1,
+          limit,
+          ...(flattenedCategories && flattenedCategories.length > 0
+            ? {
+                where: {
+                  categories: {
+                    in: flattenedCategories,
+                  },
                 },
-              },
-            }
-          : {}),
-      })
+              }
+            : {}),
+        })
 
-      posts = fetchedPosts.docs
-    } else if (relationTo === 'projects') {
-      const flattenedTags = tags?.map((tag) => {
-        if (typeof tag === 'object') return tag.id
-        else return tag
-      })
+        posts = fetchedPosts.docs
+      } else if (relationTo === 'projects') {
+        const flattenedTags = tags?.map((tag) => {
+          if (typeof tag === 'object') return tag.id
+          else return tag
+        })
 
-      const fetchedProjects: PaginatedDocs = await payload.find({
-        collection: 'projects',
-        depth: 1,
-        limit,
-        select: {
-          title: true,
-          slug: true,
-          tags: true,
-          meta: true,
-          targetAmount: true,
-          totalDonated: true,
-          status: true,
-          location: true,
-          heroImage: true,
-          donations: true,
-          dueDate: true,
-        },
-        ...(flattenedTags && flattenedTags.length > 0
-          ? {
-              where: {
-                tags: {
-                  in: flattenedTags,
+        const fetchedProjects: PaginatedDocs = await payload.find({
+          collection: 'projects',
+          depth: 1,
+          limit,
+          select: {
+            title: true,
+            slug: true,
+            tags: true,
+            meta: true,
+            targetAmount: true,
+            totalDonated: true,
+            status: true,
+            location: true,
+            heroImage: true,
+            donations: true,
+            dueDate: true,
+          },
+          ...(flattenedTags && flattenedTags.length > 0
+            ? {
+                where: {
+                  tags: {
+                    in: flattenedTags,
+                  },
                 },
-              },
-            }
-          : {}),
-      })
+              }
+            : {}),
+        })
 
-      projects = fetchedProjects.docs
+        projects = fetchedProjects.docs
+      }
+    } catch (error) {
+      console.warn('Failed to populate ArchiveBlock collection:', error)
     }
   } else {
     if (selectedDocs?.length) {

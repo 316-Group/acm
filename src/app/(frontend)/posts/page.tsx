@@ -22,6 +22,20 @@ type Args = {
 }
 
 export default async function Page({ searchParams: searchParamsPromise }: Args) {
+  if (!process.env.DATABASE_URI) {
+    return (
+      <div className="pt-24 pb-24">
+        <PageClient />
+        <div className="container mb-16">
+          <div className="prose dark:prose-invert max-w-none">
+            <h1>Explore our <span className="text-orange-600">Activities</span></h1>
+          </div>
+        </div>
+        <CollectionArchive posts={[]} />
+      </div>
+    )
+  }
+
   const { q: query, category, location } = await searchParamsPromise
   const payload = await getPayload({ config: configPromise })
 

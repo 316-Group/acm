@@ -7,7 +7,23 @@ import { PetitionArchive } from '@/components/PetitionArchive'
 import type { Page, Petition } from '@/payload-types'
 import { generateMeta } from '@/utilities/generateMeta'
 
+export const dynamic = 'force-dynamic'
+
 export default async function PetitionsPage() {
+  if (!process.env.DATABASE_URI) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-4">Petitions</h1>
+          <p className="text-lg text-muted-foreground">
+            Support causes that matter to you. Browse and sign petitions to make your voice heard.
+          </p>
+        </div>
+        <PetitionArchive petitions={[]} />
+      </div>
+    )
+  }
+
   const payload = await getPayload({ config })
 
   const petitions = await payload.find({
