@@ -6,7 +6,7 @@ FROM base AS builder
 WORKDIR /app
 COPY . .
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9
 RUN pnpm install
 RUN pnpm run build
 
