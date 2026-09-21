@@ -2,6 +2,8 @@ import { PHASE_PRODUCTION_BUILD } from 'next/constants'
 
 export function shouldSkipDbAccess(): boolean {
   if (
+    process.env.NEXT_BUILD === 'true' ||
+    process.env.IS_BUILD === 'true' ||
     process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD ||
     process.env.NEXT_PHASE === 'phase-production-build'
   ) {
@@ -13,3 +15,4 @@ export function shouldSkipDbAccess(): boolean {
   }
   return false
 }
+
