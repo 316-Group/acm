@@ -31,7 +31,12 @@ export async function getRedirects(depth = 1) {
  *
  * Cache all redirects together to avoid multiple fetches.
  */
-export const getCachedRedirects = () =>
-  unstable_cache(async () => getRedirects(), ['redirects'], {
+export const getCachedRedirects = () => {
+  if (shouldSkipDbAccess()) {
+    return async () => getRedirects()
+  }
+  return unstable_cache(async () => getRedirects(), ['redirects'], {
     tags: ['redirects'],
   })
+}
+
