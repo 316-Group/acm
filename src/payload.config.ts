@@ -26,6 +26,7 @@ import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { Projects } from './collections/Projects'
+import { shouldSkipDbAccess } from './utilities/shouldSkipDbAccess'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -125,19 +126,37 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  jobs: {
-    access: {
-      run: ({ req }: { req: PayloadRequest }): boolean => {
-        // Allow logged in users to execute this endpoint (default)
-        if (req.user) return true
+  onInit: async (payload) => {
+    if (shouldSkipDbAccess()) {
+      console.log('[PAYLOAD INIT] ⏩ Build phase - Skipping startup database queries.')
+      return
+    }
 
-        // If there is no logged in user, then check
-        // for the Vercel Cron secret to be present as an
-        // Authorization header:
-        const authHeader = req.headers.get('authorization')
-        return authHeader === `Bearer ${process.env.CRON_SECRET}`
-      },
-    },
-    tasks: [],
+    const rawUri = process.env.DATABASE_URI || ''
+    const maskedUri = rawUri ? rawUri.replace(/:[^:@]+@/, ':****@') : 'MISSING (UNDEFINED)'
+    console.log('\n========================================================')
+    console.log('[PAYLOAD INIT] 🚀 PAYLOAD SERVER INITIALIZING')
+    console.log(`[PAYLOAD INIT] 📡 DATABASE_URI: ${maskedUri}`)
+    console.log('[PAYLOAD INIT] 🔍 Running database connectivity check...')
+
+    try {
+      const [pages, posts, projects, header, footer] = await Promise.all([
+        payload.find({ collection: 'pages', limit: 10, overrideAccess: true }).catch((e) => ({ totalDocs: 0, error: e?.message })),
+        payload.find({ collection: 'posts', limit: 10, overrideAccess: true }).catch((e) => ({ totalDocs: 0, error: e?.message })),
+        payload.find({ collection: 'projects', limit: 10, overrideAccess: true }).catch((e) => ({ totalDocs: 0, error: e?.message })),
+        payload.findGlobal({ slug: 'header' }).catch((e) => ({ error: e?.message })),
+        payload.findGlobal({ slug: 'footer' }).catch((e) => ({ error: e?.message })),
+      ])
+
+      console.log(`[PAYLOAD INIT] 📄 Pages Collection: ${'totalDocs' in pages ? pages.totalDocs : 0} docs (Titles: ${'docs' in pages ? pages.docs?.map((d: any) => d.title).join(', ') : 'None'})`)
+      console.log(`[PAYLOAD INIT] 📰 Posts Collection: ${'totalDocs' in posts ? posts.totalDocs : 0} docs`)
+      console.log(`[PAYLOAD INIT] 🏗️ Projects Collection: ${'totalDocs' in projects ? projects.totalDocs : 0} docs`)
+      console.log(`[PAYLOAD INIT] 🧭 Header Global: ${header && !('error' in header) ? `FOUND (${(header as any).navItems?.length || 0} nav items)` : `EMPTY/ERROR: ${header?.error || 'null'}`}`)
+      console.log(`[PAYLOAD INIT] 🦶 Footer Global: ${footer && !('error' in footer) ? `FOUND (${(footer as any).footerMenus?.length || 0} menus)` : `EMPTY/ERROR: ${footer?.error || 'null'}`}`)
+      console.log('========================================================\n')
+    } catch (err: any) {
+      console.error('[PAYLOAD INIT ERROR] ❌ Database connectivity check failed:', err?.message || err)
+      console.log('========================================================\n')
+    }
   },
 })

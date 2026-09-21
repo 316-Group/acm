@@ -12,6 +12,8 @@ import SocialLinks from './SocialLinks'
 
 export async function Footer() {
   const footerData: Footer = await getCachedGlobal('footer', 1)()
+  const footerMenusCount = footerData?.footerMenus?.length || 0
+  console.log(`[Footer Server Component] 🦶 Rendering Footer with ${footerMenusCount} menu sections.`)
 
   const {
     footerMotto = 'Africa Change Makers: Bringing People Together to Create Lasting Change',
