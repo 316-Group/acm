@@ -110,7 +110,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
     collection: 'posts',
     depth: 1,
     limit: 12,
-    overrideAccess: false,
+    overrideAccess: true,
     select: {
       title: true,
       slug: true,

@@ -110,7 +110,7 @@ export default async function Page({ searchParams }: PageProps) {
     collection: 'projects',
     depth: 1,
     limit: 12,
-    overrideAccess: false,
+    overrideAccess: true,
     where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
     select: {
       id: true,
