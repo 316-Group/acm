@@ -10,10 +10,12 @@ type Collection = keyof Config['collections']
 
 async function getDocument(collection: Collection, slug: string, depth = 0) {
   if (shouldSkipDbAccess()) {
+    console.log(`[getDocument] Skipping DB query for collection="${collection}", slug="${slug}".`)
     return null
   }
 
   try {
+    console.log(`[getDocument] Querying collection="${collection}", slug="${slug}"...`)
     const payload = await getPayload({ config: configPromise })
 
     const page = await payload.find({
@@ -26,9 +28,11 @@ async function getDocument(collection: Collection, slug: string, depth = 0) {
       },
     })
 
-    return page.docs[0] || null
+    const doc = page.docs[0] || null
+    console.log(`[getDocument] Query result for "${collection}/${slug}":`, doc ? `SUCCESS (Found ID: ${doc.id})` : 'NOT FOUND (0 docs)')
+    return doc
   } catch (error) {
-    console.warn(`Failed to fetch document ${collection}/${slug}:`, error)
+    console.warn(`[getDocument] Error fetching document ${collection}/${slug}:`, error)
     return null
   }
 }

@@ -74,10 +74,12 @@ export const dynamic = 'force-dynamic'
 
 const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
   if (shouldSkipDbAccess()) {
+    console.log(`[queryPageBySlug] Skipping DB query for slug="${slug}".`)
     return null
   }
 
   try {
+    console.log(`[queryPageBySlug] Querying page with slug="${slug}"...`)
     const { isEnabled: draft } = await draftMode()
 
     const payload = await getPayload({ config: configPromise })
@@ -95,9 +97,11 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
       },
     })
 
-    return result.docs?.[0] || null
+    const foundPage = result.docs?.[0] || null
+    console.log(`[queryPageBySlug] Result for page slug="${slug}":`, foundPage ? `FOUND (Title: "${foundPage.title}")` : 'NOT FOUND (0 docs in DB)')
+    return foundPage
   } catch (error) {
-    console.warn(`Failed to query page by slug ${slug}:`, error)
+    console.warn(`[queryPageBySlug] Failed to query page by slug ${slug}:`, error)
     return null
   }
 })
