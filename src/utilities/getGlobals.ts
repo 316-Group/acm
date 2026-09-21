@@ -10,12 +10,12 @@ type Global = keyof Config['globals']
 
 async function getGlobal(slug: Global, depth = 0) {
   if (shouldSkipDbAccess()) {
-    console.log(`[getGlobal] Skipping DB query for global slug="${slug}".`)
+    console.log(`[getGlobal] ⏩ Skipping DB query for global slug="${slug}" (build phase).`)
     return {} as any
   }
 
   try {
-    console.log(`[getGlobal] Querying global slug="${slug}"...`)
+    console.log(`[getGlobal] 🔍 Querying global slug="${slug}" from MongoDB Atlas...`)
     const payload = await getPayload({ config: configPromise })
 
     const global = await payload.findGlobal({
@@ -23,10 +23,19 @@ async function getGlobal(slug: Global, depth = 0) {
       depth,
     })
 
-    console.log(`[getGlobal] Query result for global "${slug}":`, global ? `SUCCESS (Keys: ${Object.keys(global).join(', ')})` : 'EMPTY ({})')
-    return global || ({} as any)
-  } catch (error) {
-    console.warn(`[getGlobal] Error fetching global ${slug}:`, error)
+    if (!global) {
+      console.warn(`[getGlobal] ⚠️ Database query returned null/empty for global slug="${slug}".`)
+      return {} as any
+    }
+
+    const keys = Object.keys(global).filter((k) => k !== 'createdAt' && k !== 'updatedAt')
+    console.log(`[getGlobal] ✅ SUCCESS: Retrieved global "${slug}" from DB! Fields: [${keys.join(', ')}]`)
+    return global
+  } catch (error: any) {
+    console.error(`[getGlobal] ❌ DATABASE ERROR fetching global "${slug}":`, error?.message || error)
+    if (error?.stack) {
+      console.error(`[getGlobal] Stack snippet:`, String(error.stack).slice(0, 300))
+    }
     return {} as any
   }
 }

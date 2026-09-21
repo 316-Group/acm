@@ -88,6 +88,10 @@ export default buildConfig({
   editor: defaultLexical,
   db: mongooseAdapter({
     url: process.env.DATABASE_URI || 'mongodb://127.0.0.1:27017/build-fallback',
+    connectOptions: {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+    },
   }),
   collections: [
     Pages,

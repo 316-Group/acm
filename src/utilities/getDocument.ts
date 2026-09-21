@@ -10,17 +10,18 @@ type Collection = keyof Config['collections']
 
 async function getDocument(collection: Collection, slug: string, depth = 0) {
   if (shouldSkipDbAccess()) {
-    console.log(`[getDocument] Skipping DB query for collection="${collection}", slug="${slug}".`)
+    console.log(`[getDocument] ⏩ Skipping DB query for collection="${collection}", slug="${slug}" (build phase).`)
     return null
   }
 
   try {
-    console.log(`[getDocument] Querying collection="${collection}", slug="${slug}"...`)
+    console.log(`[getDocument] 🔍 Querying collection="${collection}", slug="${slug}" from MongoDB Atlas...`)
     const payload = await getPayload({ config: configPromise })
 
     const page = await payload.find({
       collection,
       depth,
+      overrideAccess: true,
       where: {
         slug: {
           equals: slug,
@@ -29,10 +30,17 @@ async function getDocument(collection: Collection, slug: string, depth = 0) {
     })
 
     const doc = page.docs[0] || null
-    console.log(`[getDocument] Query result for "${collection}/${slug}":`, doc ? `SUCCESS (Found ID: ${doc.id})` : 'NOT FOUND (0 docs)')
+    if (doc) {
+      console.log(`[getDocument] ✅ SUCCESS: Found document in "${collection}" with slug="${slug}" (ID: ${doc.id})`)
+    } else {
+      console.warn(`[getDocument] ⚠️ NOT FOUND: No document in "${collection}" matched slug="${slug}"`)
+    }
     return doc
-  } catch (error) {
-    console.warn(`[getDocument] Error fetching document ${collection}/${slug}:`, error)
+  } catch (error: any) {
+    console.error(`[getDocument] ❌ DATABASE ERROR fetching "${collection}/${slug}":`, error?.message || error)
+    if (error?.stack) {
+      console.error(`[getDocument] Stack snippet:`, String(error.stack).slice(0, 300))
+    }
     return null
   }
 }

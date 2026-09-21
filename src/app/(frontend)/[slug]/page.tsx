@@ -74,12 +74,12 @@ export const dynamic = 'force-dynamic'
 
 const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
   if (shouldSkipDbAccess()) {
-    console.log(`[queryPageBySlug] Skipping DB query for slug="${slug}".`)
+    console.log(`[queryPageBySlug] ⏩ Skipping DB query for slug="${slug}" (build phase).`)
     return null
   }
 
   try {
-    console.log(`[queryPageBySlug] Querying page with slug="${slug}"...`)
+    console.log(`[queryPageBySlug] 🔍 Querying page with slug="${slug}" from MongoDB Atlas...`)
     const { isEnabled: draft } = await draftMode()
 
     const payload = await getPayload({ config: configPromise })
@@ -98,10 +98,17 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
     })
 
     const foundPage = result.docs?.[0] || null
-    console.log(`[queryPageBySlug] Result for page slug="${slug}":`, foundPage ? `FOUND (Title: "${foundPage.title}")` : 'NOT FOUND (0 docs in DB)')
+    if (foundPage) {
+      console.log(`[queryPageBySlug] ✅ SUCCESS: Retrieved page slug="${slug}" (Title: "${foundPage.title}", Blocks: ${foundPage.layout?.length || 0})`)
+    } else {
+      console.warn(`[queryPageBySlug] ⚠️ NOT FOUND: Page slug="${slug}" not found in MongoDB Atlas.`)
+    }
     return foundPage
-  } catch (error) {
-    console.warn(`[queryPageBySlug] Failed to query page by slug ${slug}:`, error)
+  } catch (error: any) {
+    console.error(`[queryPageBySlug] ❌ DATABASE ERROR querying page slug="${slug}":`, error?.message || error)
+    if (error?.stack) {
+      console.error(`[queryPageBySlug] Stack snippet:`, String(error.stack).slice(0, 300))
+    }
     return null
   }
 })
