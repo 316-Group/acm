@@ -27,6 +27,8 @@ import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { Projects } from './collections/Projects'
 import { shouldSkipDbAccess } from './utilities/shouldSkipDbAccess'
+import { addDiagnosticLog } from './utilities/diagnosticLogger'
+
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
